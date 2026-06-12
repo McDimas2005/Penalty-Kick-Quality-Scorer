@@ -8,6 +8,7 @@ sdk_version: 5.0.0
 app_file: app.py
 pinned: false
 license: mit
+suggested_hardware: cpu-basic
 ---
 
 # Penalty-Kick Distancer
@@ -15,6 +16,8 @@ license: mit
 **Penalty-Kick Distancer** is an independent self-study computer vision prototype for sports video analysis. It fine-tunes YOLOv8 to detect a ball, then scores a penalty kick by measuring the detected ball's distance from a user-defined target coordinate.
 
 Live demo placeholder: `https://huggingface.co/spaces/<username>/penalty-kick-distancer`
+
+Deployment target: Hugging Face Spaces Gradio SDK on free/default CPU Basic hardware. GPU can improve inference speed, but it is not required and the app is designed to run on CPU with frame stride and max-frame limits.
 
 ## Key Features
 
@@ -55,6 +58,13 @@ pip install -r requirements.txt
 python app.py
 ```
 
+Run lightweight tests after installing development dependencies:
+
+```bash
+pip install -e ".[test]"
+python -m pytest -q
+```
+
 Windows PowerShell:
 
 ```powershell
@@ -81,11 +91,14 @@ HF_MODEL_FILENAME=best.pt
 
 If neither a local model nor a model repository is available, the app attempts to load `yolov8n.pt` as fallback demo mode. This can run the UI, but it is not your fine-tuned one-class ball detector.
 
+Fallback mode is marked in the result summary and in the annotated video. It should be used only to verify the deployment path, not to claim custom model performance.
+
 ## Dataset And Training
 
 Prepare the one-class Open Images dataset:
 
 ```bash
+pip install -e ".[data]"
 python scripts/prepare_openimages_ball_dataset.py --max-samples 1000 --split train
 ```
 
@@ -112,6 +125,7 @@ pip install -U huggingface_hub
 hf auth login
 git clone https://huggingface.co/spaces/<username>/penalty-kick-distancer
 cd penalty-kick-distancer
+cp -a /path/to/this/repository/. .
 git add .
 git commit -m "Deploy Penalty-Kick Distancer Gradio Space"
 git push
@@ -138,4 +152,3 @@ Use this project as an educational demo for computer vision and sports video ana
 ## Portfolio Value
 
 This project demonstrates dataset preparation with FiftyOne, label fusion, YOLO fine-tuning, video inference with OpenCV, application-specific scoring logic, Gradio productization, and Hugging Face Spaces deployment.
-
