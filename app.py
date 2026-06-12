@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 ROOT = Path(__file__).resolve().parent
 SRC = ROOT / "src"
@@ -26,7 +27,25 @@ DESCRIPTION = (
 
 def _empty_outputs(message: str):
     summary = pd.DataFrame([{"status": message}])
-    return None, None, summary, None, {"status": "error", "message": message}, pd.DataFrame()
+    payload = {"status": "error", "message": message}
+    return None, None, summary, None, json.dumps(payload, indent=2, ensure_ascii=False), pd.DataFrame()
+
+
+def to_builtin(value: Any) -> Any:
+    """Convert common scientific/Python path objects to JSON-safe builtins."""
+
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, dict):
+        return {str(key): to_builtin(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [to_builtin(item) for item in value]
+    if hasattr(value, "item"):
+        try:
+            return value.item()
+        except Exception:
+            return str(value)
+    return value
 
 
 def run_detection(
@@ -96,7 +115,8 @@ def run_detection(
     ]
     summary_df = pd.DataFrame([{key: metrics.get(key) for key in summary_fields}])
     per_frame_df = pd.DataFrame(per_frame)
-    return output_video, best_frame, summary_df, plot_path, metadata, per_frame_df
+    metadata_text = json.dumps(to_builtin(metadata), indent=2, ensure_ascii=False)
+    return output_video, best_frame, summary_df, plot_path, metadata_text, per_frame_df
 
 
 def build_app() -> gr.Blocks:
@@ -144,7 +164,7 @@ def build_app() -> gr.Blocks:
                 summary_table = gr.Dataframe(label="Result summary")
             with gr.Row():
                 distance_plot = gr.Image(label="Distance-over-time plot", type="filepath")
-                metadata_json = gr.JSON(label="JSON metadata")
+                metadata_json = gr.Code(label="Metadata JSON", language="json")
             per_frame_table = gr.Dataframe(label="Per-frame detections")
 
             run_button.click(
@@ -260,4 +280,9 @@ demo = build_app()
 
 
 if __name__ == "__main__":
-    demo.queue(max_size=8).launch()
+    demo.launch(
+        server_name="0.0.0.0",
+        server_port=7860,
+        share=False,
+        ssr_mode=False,
+    )
