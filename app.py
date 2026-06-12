@@ -242,37 +242,6 @@ def build_app() -> gr.Blocks:
                 "Recommended default: `Tracked ball scoring`. It keeps the original detection-plus-distance idea while improving video stability."
             )
 
-        with gr.Tab("Deployment Guide"):
-            gr.Markdown(
-                """
-                ## Hugging Face Spaces Deployment
-
-                1. Create a Hugging Face account and a new Gradio Space.
-                2. Clone the Space repository locally.
-                3. Copy this project into the Space repo.
-                4. Put your trained model at `models/best.pt`, or upload it to a separate model repository.
-                5. If using a model repository, set `HF_MODEL_REPO_ID` and `HF_MODEL_FILENAME` in Space variables.
-                6. Commit and push the files.
-                7. Watch the Space build logs and test with a short video.
-
-                ```bash
-                pip install -U huggingface_hub
-                hf auth login
-                git clone https://huggingface.co/spaces/<username>/penalty-kick-distancer
-                cd penalty-kick-distancer
-                git add .
-                git commit -m "Deploy Penalty-Kick Distancer Gradio Space"
-                git push
-                ```
-
-                Preferred model repository option:
-
-                ```bash
-                hf upload <username>/penalty-kick-distancer-yolov8-ball models/best.pt best.pt --repo-type model
-                ```
-                """
-            )
-
     return demo
 
 
